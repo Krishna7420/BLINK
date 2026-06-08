@@ -9,9 +9,26 @@ import SwiftUI
 
 @main
 struct BLINKApp: App {
+    
+    @StateObject var appState = AppState()
+    
     var body: some Scene {
+        
         WindowGroup {
-            ContentView()
+            
+            NavigationStack {
+                
+                if appState.showSplash {
+                    
+                    SplashView()
+                        .environmentObject(appState)
+                    
+                } else {
+                    
+                    MenuView()
+                        .environmentObject(appState)
+                }
+            }
         }
     }
 }
