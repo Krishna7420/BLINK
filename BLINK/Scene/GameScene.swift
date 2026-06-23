@@ -63,12 +63,20 @@ extension GameScene {
         
         let camera = SCNCamera()
         
+        // IMPORTANT
+        camera.zNear = 0.1
         camera.zFar = 150
         
-        // CINEMATIC EFFECTS
+        // HORROR CINEMATIC LOOK
+        
         camera.wantsHDR = true
-        camera.bloomIntensity = 1
+        camera.bloomIntensity = 1.2
         camera.bloomThreshold = 0.2
+        
+        // OPTIONAL
+        camera.wantsDepthOfField = false
+        camera.focusDistance = 15
+        camera.fStop = 2.5
         
         cameraNode.camera = camera
         
@@ -76,6 +84,16 @@ extension GameScene {
             0,
             2,
             8
+        )
+        
+        // LOOK TOWARDS MONSTER
+        
+        cameraNode.look(
+            at: SCNVector3(
+                0,
+                2,
+                -20
+            )
         )
         
         scene.rootNode.addChildNode(cameraNode)
@@ -166,7 +184,7 @@ extension GameScene {
         let ambient = SCNLight()
         
         ambient.type = .ambient
-        ambient.intensity = 600
+        ambient.intensity = 1200
         
         let ambientNode = SCNNode()
         
@@ -564,156 +582,189 @@ extension GameScene {
 // MARK: - MONSTER
 extension GameScene {
         
-        func setupMonster() {
-            
-            // MAIN BODY
-            let body = SCNCapsule(
-                capRadius: 0.25,
-                height: 3.8
-            )
-            
-            body.firstMaterial?.diffuse.contents = UIColor(
-                white: 0.02,
-                alpha: 1
-            )
-            
-            monsterNode.geometry = body
-            
-            monsterNode.position = SCNVector3(
-                0,
-                2,
-                -35
-            )
-            
-            scene.rootNode.addChildNode(monsterNode)
-            
-            // HEAD
-            let head = SCNSphere(radius: 0.45)
-            
-            head.firstMaterial?.diffuse.contents = UIColor.black
-            
-            let headNode = SCNNode(geometry: head)
-            
-            headNode.position = SCNVector3(
-                0,
-                2.1,
-                0
-            )
-            
-            // TILT HEAD
-            headNode.eulerAngles.z = -.pi / 10
-            
-            monsterNode.addChildNode(headNode)
-            
-            // LEFT EYE
-            let leftEye = SCNSphere(radius: 0.05)
-            
-            leftEye.firstMaterial?.emission.contents = UIColor.white
-            
-            let leftEyeNode = SCNNode(geometry: leftEye)
-            
-            leftEyeNode.position = SCNVector3(
-                -0.12,
-                 0.05,
-                 0.38
-            )
-            
-            headNode.addChildNode(leftEyeNode)
-            
-            // RIGHT EYE
-            let rightEye = SCNSphere(radius: 0.05)
-            
-            rightEye.firstMaterial?.emission.contents = UIColor.white
-            
-            let rightEyeNode = SCNNode(geometry: rightEye)
-            
-            rightEyeNode.position = SCNVector3(
-                0.12,
-                0.05,
-                0.38
-            )
-            
-            headNode.addChildNode(rightEyeNode)
-            
-            // LEFT ARM
-            let leftArm = SCNCylinder(
-                radius: 0.08,
-                height: 3
-            )
-            
-            leftArm.firstMaterial?.diffuse.contents = UIColor.black
-            
-            let leftArmNode = SCNNode(geometry: leftArm)
-            
-            leftArmNode.position = SCNVector3(
-                -0.5,
-                 0.3,
-                 0
-            )
-            
-            leftArmNode.eulerAngles.z = .pi / 6
-            
-            monsterNode.addChildNode(leftArmNode)
-            
-            // RIGHT ARM
-            let rightArm = SCNCylinder(
-                radius: 0.08,
-                height: 3
-            )
-            
-            rightArm.firstMaterial?.diffuse.contents = UIColor.black
-            
-            let rightArmNode = SCNNode(geometry: rightArm)
-            
-            rightArmNode.position = SCNVector3(
-                0.5,
-                0.3,
-                0
-            )
-            
-            rightArmNode.eulerAngles.z = -.pi / 6
-            
-            monsterNode.addChildNode(rightArmNode)
-            
-            // FLOATING ANIMATION
-            let floatUp = SCNAction.moveBy(
-                x: 0,
-                y: 0.25,
-                z: 0,
-                duration: 2
-            )
-            
-            floatUp.timingMode = .easeInEaseOut
-            
-            let floatDown = floatUp.reversed()
-            
-            let floating = SCNAction.sequence([
-                floatUp,
-                floatDown
-            ])
-            
-            monsterNode.runAction(
-                .repeatForever(floating)
-            )
-            
-            // SLIGHT ROTATION
-            let rotateLeft = SCNAction.rotateBy(
-                x: 0,
-                y: 0.1,
-                z: 0,
-                duration: 2
-            )
-            
-            let rotateRight = rotateLeft.reversed()
-            
-            let sway = SCNAction.sequence([
-                rotateLeft,
-                rotateRight
-            ])
-            
-            monsterNode.runAction(
-                .repeatForever(sway)
-            )
+    func setupMonster() {
+        
+        // MAIN BODY
+        
+        let body = SCNCapsule(
+            capRadius: 0.25,
+            height: 3.8
+        )
+        
+        body.firstMaterial?.diffuse.contents = UIColor.red
+        
+        body.firstMaterial?.emission.contents = UIColor(
+            white: 0.08,
+            alpha: 1
+        )
+        
+        body.firstMaterial?.lightingModel = .physicallyBased
+        
+        monsterNode.geometry = body
+        
+        monsterNode.position = SCNVector3(
+            0,
+            2,
+            -20
+        )
+        
+        scene.rootNode.addChildNode(monsterNode)
+        
+        // DEBUG SPHERE
+        // Remove later
+        
+        let debugSphere = SCNSphere(radius: 0.3)
+        
+        debugSphere.firstMaterial?.diffuse.contents = UIColor.red
+        
+        let debugNode = SCNNode(geometry: debugSphere)
+        
+        debugNode.position = SCNVector3(
+            0,
+            1.5,
+            0
+        )
+        
+        monsterNode.addChildNode(debugNode)
+        
+        // HEAD
+        
+        let head = SCNSphere(radius: 0.45)
+        
+        head.firstMaterial?.diffuse.contents = UIColor.black
+        
+        head.firstMaterial?.emission.contents = UIColor(
+            white: 0.05,
+            alpha: 1
+        )
+        
+        let headNode = SCNNode(geometry: head)
+        
+        headNode.position = SCNVector3(
+            0,
+            2.1,
+            0
+        )
+        
+        headNode.eulerAngles.z = -.pi / 10
+        
+        monsterNode.addChildNode(headNode)
+        
+        // LEFT EYE
+        
+        let leftEye = SCNSphere(radius: 0.06)
+        
+        leftEye.firstMaterial?.emission.contents = UIColor.red
+        
+        let leftEyeNode = SCNNode(geometry: leftEye)
+        
+        leftEyeNode.position = SCNVector3(
+            -0.12,
+             0.05,
+             0.38
+        )
+        
+        headNode.addChildNode(leftEyeNode)
+        
+        // RIGHT EYE
+        
+        let rightEye = SCNSphere(radius: 0.06)
+        
+        rightEye.firstMaterial?.emission.contents = UIColor.red
+        
+        let rightEyeNode = SCNNode(geometry: rightEye)
+        
+        rightEyeNode.position = SCNVector3(
+            0.12,
+            0.05,
+            0.38
+        )
+        
+        headNode.addChildNode(rightEyeNode)
+        
+        // LEFT ARM
+        
+        let leftArm = SCNCylinder(
+            radius: 0.08,
+            height: 3
+        )
+        
+        leftArm.firstMaterial?.diffuse.contents = UIColor.red
+        
+        let leftArmNode = SCNNode(geometry: leftArm)
+        
+        leftArmNode.position = SCNVector3(
+            -0.5,
+             0.3,
+             0
+        )
+        
+        leftArmNode.eulerAngles.z = .pi / 6
+        
+        monsterNode.addChildNode(leftArmNode)
+        
+        // RIGHT ARM
+        
+        let rightArm = SCNCylinder(
+            radius: 0.08,
+            height: 3
+        )
+        
+        rightArm.firstMaterial?.diffuse.contents = UIColor.red
+        
+        let rightArmNode = SCNNode(geometry: rightArm)
+        
+        rightArmNode.position = SCNVector3(
+            0.5,
+            0.3,
+            0
+        )
+        
+        rightArmNode.eulerAngles.z = -.pi / 6
+        
+        monsterNode.addChildNode(rightArmNode)
+        
+        // FLOAT
+        
+        let floatUp = SCNAction.moveBy(
+            x: 0,
+            y: 0.25,
+            z: 0,
+            duration: 2
+        )
+        
+        floatUp.timingMode = .easeInEaseOut
+        
+        let floatDown = floatUp.reversed()
+        
+        let floating = SCNAction.sequence([
+            floatUp,
+            floatDown
+        ])
+        
+        monsterNode.runAction(
+            .repeatForever(floating)
+        )
+        
+        // SWAY
+        
+        let rotateLeft = SCNAction.rotateBy(
+            x: 0,
+            y: 0.1,
+            z: 0,
+            duration: 2
+        )
+        
+        let rotateRight = rotateLeft.reversed()
+        
+        let sway = SCNAction.sequence([
+            rotateLeft,
+            rotateRight
+        ])
+        
+        monsterNode.runAction(
+            .repeatForever(sway)
+        )
     }
 }
 
@@ -722,8 +773,8 @@ extension GameScene {
     
     func setupFog() {
         
-        scene.fogStartDistance = 25
-        scene.fogEndDistance = 60
+        scene.fogStartDistance = 60
+        scene.fogEndDistance = 120
         
         scene.fogColor = UIColor(
             red: 0.02,

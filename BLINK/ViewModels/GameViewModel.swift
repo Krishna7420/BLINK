@@ -11,6 +11,7 @@ import Combine
 
 final class GameViewModel: ObservableObject {
     
+    private var encounterID = UUID()
     // MARK: - SCENE
     let gameScene = GameScene()
     
@@ -45,15 +46,25 @@ final class GameViewModel: ObservableObject {
     // MARK: - START ENCOUNTER
     func startMonsterEncounter() {
         
-        guard !isMonsterActive else { return }
+        let currentEncounter = encounterID
+        
+        guard !isMonsterActive else {
+            return
+        }
         
         isMonsterActive = true
+        canKillMonster = true
         
         // RESET MONSTER
+        
+        gameScene.monsterNode.removeAllActions()
+        
+        gameScene.monsterNode.isHidden = false
+        
         gameScene.monsterNode.position = SCNVector3(
             0,
-            1,
-            -35
+            2,
+            -20
         )
         
         gameScene.monsterNode.scale = SCNVector3(
@@ -64,24 +75,35 @@ final class GameViewModel: ObservableObject {
         
         gameScene.monsterNode.opacity = 1
         
-        canKillMonster = true
-        
         // APPROACH PLAYER
+        
         SCNTransaction.begin()
         
-        SCNTransaction.animationDuration = 4
+        SCNTransaction.animationDuration = 8
         
-        gameScene.monsterNode.position.z = 3
+        gameScene.monsterNode.position = SCNVector3(
+            0,
+            2,
+            1
+        )
         
         SCNTransaction.commit()
         
-        // FAIL
-        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+        // FAIL IF PLAYER DOESN'T BLINK
+        
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 8
+        ) {
             
-            if self.isMonsterActive {
-                
-                self.triggerGameOver()
+            guard currentEncounter == self.encounterID else {
+                return
             }
+            
+            guard self.isMonsterActive else {
+                return
+            }
+            
+            self.triggerGameOver()
         }
     }
     
@@ -105,7 +127,7 @@ final class GameViewModel: ObservableObject {
         }
         
         // KILL MONSTER
-        if canKillMonster {
+        if canKillMonster && isMonsterActive {
             
             killMonster()
         }
@@ -114,10 +136,13 @@ final class GameViewModel: ObservableObject {
     // MARK: - KILL MONSTER
     func killMonster() {
         
+        guard isMonsterActive else {
+            return
+        }
+        
         canKillMonster = false
         isMonsterActive = false
         
-        // DEATH ANIMATION
         SCNTransaction.begin()
         
         SCNTransaction.animationDuration = 0.2
@@ -132,13 +157,23 @@ final class GameViewModel: ObservableObject {
         
         SCNTransaction.commit()
         
-        // SHAKE
         gameScene.cameraShake(
             intensity: 0.08
         )
         
-        // NEXT ENCOUNTER
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+        let currentEncounter = encounterID
+        
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 2
+        ) {
+            
+            guard currentEncounter == self.encounterID else {
+                return
+            }
+            
+            guard !self.isGameOver else {
+                return
+            }
             
             self.startMonsterEncounter()
         }
@@ -159,8 +194,8 @@ final class GameViewModel: ObservableObject {
         
         gameScene.monsterNode.position = SCNVector3(
             0,
-            1,
-            2
+            2,
+            1
         )
         
         gameScene.monsterNode.scale = SCNVector3(
@@ -186,29 +221,42 @@ final class GameViewModel: ObservableObject {
     // MARK: - RESTART GAME
     func restartGame() {
         
-        isGameOver = false
         
+        
+        encounterID = UUID()
+        isGameOver = false
         blinkOpacity = 0
         
         isMonsterActive = false
         canKillMonster = false
         
-        // RESET MONSTER
-        gameScene.monsterNode.position = SCNVector3(
-            0,
-            1,
-            -35
-        )
+        // STOP ANY OLD ANIMATIONS
+        gameScene.monsterNode.removeAllActions()
         
+        // RESET MONSTER VISIBILITY
+        gameScene.monsterNode.opacity = 1
+        
+        // RESET SCALE
         gameScene.monsterNode.scale = SCNVector3(
             1,
             1,
             1
         )
         
-        gameScene.monsterNode.opacity = 1
+        // RESET POSITION
+        gameScene.monsterNode.position = SCNVector3(
+            0,
+            2,
+            -20
+        )
         
-        startMonsterEncounter()
+        // SMALL DELAY TO LET UI UPDATE
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 0.1
+        ) {
+            
+            self.startMonsterEncounter()
+        }
     }
     
     // MARK: - AUDIO

@@ -17,6 +17,7 @@ struct GameView: View {
         ZStack {
             
             // MARK: - GAME WORLD
+            
             SceneView(
                 scene: vm.scene,
                 options: []
@@ -24,21 +25,19 @@ struct GameView: View {
             .ignoresSafeArea()
             .onAppear {
                 
+                print("GAME VIEW APPEARED")
+                
                 vm.startMonsterEncounter()
             }
             .onDisappear {
                 
-                vm.stopMusic()
-            }
-            .onTapGesture {
+                print("GAME VIEW DISAPPEARED")
                 
-                if !vm.isGameOver {
-                    
-                    vm.playerBlink()
-                }
+                vm.stopMusic()
             }
             
             // MARK: - DARK VIGNETTE
+            
             RadialGradient(
                 colors: [
                     Color.clear,
@@ -51,11 +50,13 @@ struct GameView: View {
             .ignoresSafeArea()
             
             // MARK: - BLINK FLASH
+            
             BlinkOverlayView(
                 opacity: vm.blinkOpacity
             )
             
-            // MARK: - TOP HORROR HUD
+            // MARK: - TOP HUD
+            
             VStack {
                 
                 HStack {
@@ -101,7 +102,8 @@ struct GameView: View {
                 Spacer()
             }
             
-            // MARK: - WARNING TEXT
+            // MARK: - WARNING
+            
             if vm.isMonsterActive && !vm.isGameOver {
                 
                 VStack {
@@ -110,13 +112,22 @@ struct GameView: View {
                     
                     Text("BLINK TO SURVIVE")
                         .foregroundColor(.red)
-                        .font(.system(size: 32, weight: .black))
-                        .shadow(color: .red, radius: 10)
+                        .font(
+                            .system(
+                                size: 32,
+                                weight: .black
+                            )
+                        )
+                        .shadow(
+                            color: .red,
+                            radius: 10
+                        )
                         .padding(.bottom, 120)
                 }
             }
             
             // MARK: - GAME OVER
+            
             if vm.isGameOver {
                 
                 ZStack {
@@ -139,7 +150,10 @@ struct GameView: View {
                                 )
                             )
                             .foregroundColor(.red)
-                            .shadow(color: .red, radius: 20)
+                            .shadow(
+                                color: .red,
+                                radius: 20
+                            )
                         
                         Text("THE ENTITY CONSUMED YOU")
                             .foregroundColor(.white)
@@ -148,16 +162,19 @@ struct GameView: View {
                         
                         Button {
                             
-                    
+                            print("RESTART PRESSED")
+                            
                             vm.restartGame()
-                           
                             
                         } label: {
                             
                             Text("RESTART")
                                 .fontWeight(.black)
                                 .foregroundColor(.black)
-                                .frame(width: 220, height: 60)
+                                .frame(
+                                    width: 220,
+                                    height: 60
+                                )
                                 .background(Color.white)
                                 .cornerRadius(16)
                                 .shadow(radius: 10)
@@ -168,12 +185,18 @@ struct GameView: View {
             }
             
             // MARK: - SCANLINES
+            
             VStack(spacing: 6) {
                 
-                ForEach(0..<80, id: \.self) { _ in
+                ForEach(
+                    0..<80,
+                    id: \.self
+                ) { _ in
                     
                     Rectangle()
-                        .fill(Color.black.opacity(0.08))
+                        .fill(
+                            Color.black.opacity(0.08)
+                        )
                         .frame(height: 2)
                 }
             }
@@ -181,6 +204,7 @@ struct GameView: View {
             .blendMode(.multiply)
             .allowsHitTesting(false)
         }
+
     }
 }
 
